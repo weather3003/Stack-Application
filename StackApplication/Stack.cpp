@@ -43,12 +43,14 @@ bool Stack::pop(stackType & destination)
 	}
 }
 
-stackType Stack::getTop()
+stackType Stack::peek()
 {
-	if (!top)
-		return top->data;
-	else
-		return NULL;
+	//If Google is to be trusted then this should crash program in
+	//debug mode (but not give any overhead otherwise) and is a better
+	//way of bug checking rather than relying on the compiler
+	//and lets users know when they made a mistake easily
+	_ASSERT(count > 0);		
+	return top->data;
 }
 
 int Stack::getCount()
