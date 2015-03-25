@@ -79,10 +79,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Stack.cpp" />
-    <ClCompile Include="Test.cpp" />
+    <ClCompile Include="calculator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Stack.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="infix.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
