@@ -2,7 +2,56 @@
 #include "Stack.h"
 using namespace std;
 
-bool push(stackType);
-bool pop(stackType &);	//pop the top of the stack into a stackType reference
-stackType getTop();		//return the value of the top of the stack (no removal)
-int getCount();			//return how many elements are on the top of the stack
+Stack::Stack()
+{
+	top = NULL;
+	count = 0;
+}
+Stack::~Stack()
+{
+	while (top != NULL)
+	{
+		Node * deletion = top;
+		top = top->next;
+		delete deletion;
+	}
+}
+
+bool Stack::push(stackType newData)
+{
+	Node * insertion = new Node; if (!insertion) return false;
+	insertion->data = newData;
+	insertion->next = top;
+	top = insertion;
+	count++;
+
+	return true;
+}
+
+bool Stack::pop(stackType & destination)
+{
+	if (count == 0)
+		return false;
+	else
+	{
+		destination = top->data;
+		Node * deletion = top;
+		top = top->next;
+		delete deletion;
+		count--;
+		return true;
+	}
+}
+
+stackType Stack::getTop()
+{
+	if (!top)
+		return top->data;
+	else
+		return NULL;
+}
+
+int Stack::getCount()
+{
+	return count;
+}
