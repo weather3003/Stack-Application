@@ -2,7 +2,6 @@
 #include<string>
 #include<sstream> 
 #include<fstream> 
-#include<queue>
 #include"Stack.h"
 using namespace std;
 
@@ -112,11 +111,10 @@ string solution(string expression)
 	expressionStream.str(expression);
 
 	Stack operandStack;
-	while (!expressionStream.eof())
+	string token;
+	expressionStream >> token;
+	while (!expressionStream.eof() && token != "")
 	{
-		string token;
-		expressionStream >> token;
-
 		if (isdigit(token[0]) || isnegative(token)) //if an operand
 		{
 			operandStack.push(token);
@@ -132,38 +130,37 @@ string solution(string expression)
 				else if (operation == '-') result = op1 - op2;
 				else if (operation == '*') result = op1 * op2;
 				else if (operation == '/' && op2 != 0) result = (float)op1 / op2 + .5;
+				else return errorMessage;
 
 				operandStack.push(to_string(result));
 			}
 			else return errorMessage;
 		}
 		else return errorMessage;
+
+		expressionStream >> token;
 	}
 	string result = ""; operandStack.pop(result);
 
-	if (operandStack.getCount() == 1)
+	if (operandStack.getCount() == 0)
 		return result;
 	else return errorMessage;
 }
 
 void main()
 {
-	queue<string> infixExpressions;
-	queue<string> answers;
-	ifstream infix("infix.txt");
-
-	while (!infix.eof())
+	ifstream infix("infix.txt"); int i = 1;
+	ofstream solutions("infixSolutions.txt");
+	solutions << "Solutions to infix expressions - Daryl Bagley" << endl << endl;
+	
+	string expression; getline(infix, expression);
+	while (expression != "")
 	{
-		string expression; getline(infix, expression);//read expression
-		infixExpressions.push(expression); //push original equation to queue for later
-		answers.push(solution(postfix(expression))); //push answer to queue for later	
+		solutions << i << ") " << expression;
+		string answer = solution(postfix(expression));
+		solutions << " = " << answer << endl;
+		i++;
+		getline(infix, expression);
 	}
-
-	int length = answers.size(); //Note here that the last one will always be invalid and shoud never be printed
-	for (int i = 1; i < length; i++)
-	{
-		string expression = infixExpressions.front(); infixExpressions.pop();
-		string answer = answers.front(); answers.pop();
-		cout << i << ") " << expression << " = " << answer << endl;
-	}
+	infix.close(); solutions.close();
 }
