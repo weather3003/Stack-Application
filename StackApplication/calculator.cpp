@@ -6,9 +6,108 @@
 #include"Stack.h"
 using namespace std;
 
+//Matches an operator with it's precedence
+struct Operator{
+	string name;
+	int precedence;
+};
+
+//Called to fill an Operator [6] array with the list of operators
+void defineOperators(Operator * operators)
+{
+	//0 reserved for failure aka false aka not an operator
+	operators[0].name = "("; operators[0].precedence = 1;
+	operators[1].name = "-"; operators[1].precedence = 3;
+	operators[2].name = "+"; operators[2].precedence = 3;
+	operators[3].name = "*"; operators[3].precedence = 4;
+	operators[4].name = "/"; operators[4].precedence = 4;
+	operators[5].name = ")"; operators[5].precedence = 2; //Will keep popping until '(' is found
+}
+
+//Returns the precedence of an operator; returns zero if failed
+int getPrecedence(string op)
+{
+	Operator operators[6]; defineOperators(operators);
+	for (int i = 0; i < 6; i++)
+	{
+		if (operators[i].name[0] == op[0])	return operators[i].precedence;
+	}
+	return 0;
+}
+
+//tells if a string is a negative number
+bool isnegative(string token)
+{
+	if (token.length() > 1 && token[0] == '-')
+		return true;
+	else
+		return false;
+}
+
+//Takes a string expression and returns it's postfix version
+string postfix(string expression)
+{
+	Operator operators[6]; defineOperators(operators);
+
+	istringstream expressionStream;
+	expressionStream.str(expression);
+
+	Stack operatorStack;
+	stringstream postfixExpression;
+	while (!expressionStream.eof())
+	{
+		string token;
+		expressionStream >> token;
+
+		//while (isspace(peek))
+		//{	//ignore whitespace
+		//	expressionStream.ignore();
+		//	peek = expressionStream.peek();
+		//}
+
+		if (isdigit(token[0]) || isnegative(token)) //if an operand
+		{
+			postfixExpression << token << " ";
+		}
+		else if (getPrecedence(token)) //if an operator
+		{														// if operator stack is not empty
+			if (operatorStack.getCount() > 0 && token != "(")	// and operator in question is not "("
+			{
+				int stackPrecedence = getPrecedence(operatorStack.peek());
+				int precedence = getPrecedence(token);
+				while (stackPrecedence >= precedence) // while the stack has a greater precedence
+				{
+					string stackOp = "";
+					operatorStack.pop(stackOp);
+					postfixExpression << stackOp << " ";
+					if (operatorStack.getCount() > 0)
+						stackPrecedence = getPrecedence(operatorStack.peek());
+					else break;
+				}
+			}
+			if (token != ")")
+				operatorStack.push(token);
+			else
+				operatorStack.pop(token); //takes '(' off of stack and does not push ')'
+		}
+		else
+		{						//if for some reason there was
+			return "invalid";	//a character that was not recognized
+		}
+	}
+	string stackOp = "";
+	while (operatorStack.getCount() > 0)
+	{
+		operatorStack.pop(stackOp);
+		if (stackOp != "(")
+			postfixExpression << stackOp << " ";
+	}
+	
+	return postfixExpression.str();
+}
+
 void main()
 {
-	char operators[6] = { '(', ')', '-', '+', '/', '*' };
 	queue<string> infixExpressions;
 
 	ifstream infix("infix.txt");
@@ -17,64 +116,9 @@ void main()
 		//sets expression and expressionStreamto a string and stringstream of the expression
 		string expression;
 		getline(infix, expression);
-		istringstream expressionStream;
-		expressionStream.str(expression);
+		infixExpressions.push(expression); //push to queue for later
 
-		infixExpressions.push(expression);
-
-		Stack operatorStack;
-		stringstream postfixExpression;
-		while (!expressionStream.eof())
-		{
-			char peek = expressionStream.peek();
-			while (isspace(peek))
-			{	//ignore whitespace
-				expressionStream.ignore();
-				peek = expressionStream.peek();
-			}
-
-
-			if (isdigit(peek))
-			{
-				int operand;
-				expressionStream >> operand;
-				postfixExpression << operand << " ";
-			}
-			else if (find(operators, operators + 6, peek) - (operators + 6) ) //if an operator
-			{
-				string op;
-				expressionStream >> op;
-				
-				if (operatorStack.getCount() > 0 && op != "(") // if operator stack is not empty
-				{
-					char * stackPrecedence = find(operators, operators + 6, peek);
-					char * precedence = find(operators, operators + 6, op[0]);
-					while (stackPrecedence > precedence) // while the stack has a greater precedence
-					{
-						string stackOp = "";
-						operatorStack.pop(stackOp);
-						postfixExpression << stackOp << " ";
-						stackPrecedence = find(operators, operators + 6, expressionStream.peek());
-					}
-				}
-				operatorStack.push(op);
-			}
-			else
-			{
-				postfixExpression.str("invalid");
-			}
-		}
-		string stackOp = "";
-		while (operatorStack.getCount() > 0)
-		{
-			operatorStack.pop(stackOp);
-			postfixExpression << stackOp << " ";
-		}
-		cout << postfixExpression.str() << endl;
+		cout << postfix(expression) << endl;
+		
 	}
-//	while (!infixExpressions.empty())
-//	{
-//		cout << infixExpressions.front() << endl;
-//		infixExpressions.pop();
-//	}
 }
